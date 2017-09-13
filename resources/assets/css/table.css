@@ -1,0 +1,18 @@
+.datable {
+  margin-top: 1em;
+  overflow: auto;
+  background-color: white;
+}
+table.datable {
+  border-collapse: collapse;
+  text-align: center;
+  width: 100%;
+}
+.datable caption {font-weight: bold}
+.datable tr:nth-of-type(even) {background-color: #eee}
+.datable th, td {
+  padding: 5px 0;
+  border: 1px solid #ccc
+}
+.datable th {background: linear-gradient(#ddf, #bbf)}
+.datable label {margin: 0 20px}

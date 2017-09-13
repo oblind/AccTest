@@ -1,0 +1,26 @@
+{
+    "remotePath": "/acctest",
+    "host": "www.gpib.cc",
+    "username": "wwwadmin",
+    "password": "macro0852",
+    "port": 21,
+    "secure": false,
+    "protocol": "ftp",
+    "uploadOnSave": false,
+    "passive": false,
+    "debug": false,
+    "privateKeyPath": null,
+    "passphrase": null,
+    "ignore": [
+        "\\.vscode",
+        "\\.git",
+        "\\.DS_Store",
+        "/node_modules",
+        "/vendor"
+    ],
+    "generatedFiles": {
+        "uploadOnSave": false,
+        "extensionsToInclude": [],
+        "path": ""
+    }
+}
