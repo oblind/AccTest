@@ -5,6 +5,7 @@ import Vuex from 'vuex'
 import VueRouter from 'vue-router'
 import UserPage from './UserPage'
 import EditUserPage from './EditUserPage'
+import EditDevicePage from './EditDevicePage'
 import DevicePage from './DevicePage'
 import LoginPage from './LoginPage'
 
@@ -12,18 +13,19 @@ Vue.use(Vuex)
 Vue.use(VueRouter)
 Vue.component('UserPage', UserPage)
 Vue.component('EditUserPage', EditUserPage)
+Vue.component('EditDevicePage', EditDevicePage)
 Vue.component('DevicePage', DevicePage)
 Vue.component('LoginPage', LoginPage)
 
 let store = new Vuex.Store({
   state: {
-    user: null, users: null, curUser: null, selected: null,
+    user: null, users: null, curUser: null, curDevice: null, selected: null,
     fixUser(u) {
       u.groupName = u.group.name
       u.devCount = u.device.length + '/' + u.group.capacity
       u.link = '<a href="#/user/' + u.id + '">' + u.name + '</a>'
       u.device.forEach(e => {
-        e.link = '<a href="#/user/' + u.id + '/device/' + e.id + '">' + e.token + '</a>'
+        e.link = '<a href="#/user/' + u.id + '/device/' + e.id + '">' + e.name + '</a>'
         e.created_at = e.created_at.substr(2, e.created_at.length - 5)
       })
     }
@@ -96,24 +98,19 @@ let router = new VueRouter({
         {
           name: 'editUser',
           path: 'edit',
-          component: {
-            name: 'editUser',
-            ref: 'editUser',
-            template: '<EditUserPage :user="$store.state.curUser"></EditUserPage>',
-            beforeRouteEnter(to, from, next) {
-              store.state.curUser = store.state.users ? store.state.users.find(u => u.id == to.params.id) : store.state.user
-              next()
-            },
-          }
+          component: EditUserPage,
         }, {
           name: 'device',
           path: 'device/:devId',
-          component: {
-            name: 'device',
-            ref: 'device',
-            template: '<DevicePage :user="$store.state.curUser"></DevicePage>',
-          },
-        },
+          component: DevicePage,
+          children: [
+            {
+              name: 'editDevice',
+              path: 'edit',
+              component: EditDevicePage,
+            }
+          ]
+        }
       ]
     }, {
       name: 'login',

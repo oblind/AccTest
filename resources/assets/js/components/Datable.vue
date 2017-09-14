@@ -16,36 +16,38 @@
         </template>
       </template><th v-if="tbl.action">操作</th></tr>
     </thead>
-    <tbody v-if="data && data.length">
-      <tr v-for="(row, i) in data" :key="i">
-        <template v-for="(c, j) in tbl.columns">
-          <td v-if="typeof c != 'object'" v-html="row[j]" :key="j"></td>
-          <template v-else>
-            <template v-if="!hide[j]">
-              <td v-if="!c.type && typeof c.items == 'function'" v-html="getItems(row[j], c.items(row, j))" :key="j"></td>
-              <td v-else-if="!c.type && c.items" v-html="getItems(row[j], c.items)" :key="j"></td>
-              <td v-else-if="!c.type && c.filter" v-html="c.filter(row[j])" :key="j"></td>
-              <td v-else-if="!c.type" v-html="row[j]" :key="j"></td>
-              <td v-else-if="c.type == 'radio'" :key="j">
-                <label v-for="(o, k) in c.items" :key="k"><input type="radio" :value="k" v-model="row[j]"><span v-html="o"></span></label>
-              </td>
-              <td v-else-if="c.type == 'select'" :key="j">
-                <select v-model="row[j]" @change="c.onchange && c.onchange(row)"><option v-for="(o, k) in typeof c.items == 'function' ? c.items(row, j, c.bind) : c.items" :value="k" v-html="o" :key="k"></option></select>
-              </td>
-              <td v-else-if="c.type == 'checkbox'" :key="j">
-                <label v-for="(o, k) in c.items" :key="k"><input type="checkbox" :value="k" v-model="row[j]"><span v-html="o"></span></label>
-              </td>
+    <tbody>
+      <template v-if="data && data.length">
+        <tr v-for="(row, i) in data" :key="i">
+          <template v-for="(c, j) in tbl.columns">
+            <td v-if="typeof c != 'object'" v-html="row[j]" :key="j"></td>
+            <template v-else>
+              <template v-if="!hide[j]">
+                <td v-if="!c.type && typeof c.items == 'function'" v-html="getItems(row[j], c.items(row, j))" :key="j"></td>
+                <td v-else-if="!c.type && c.items" v-html="getItems(row[j], c.items)" :key="j"></td>
+                <td v-else-if="!c.type && c.filter" v-html="c.filter(row[j])" :key="j"></td>
+                <td v-else-if="!c.type" v-html="row[j]" :key="j"></td>
+                <td v-else-if="c.type == 'radio'" :key="j">
+                  <label v-for="(o, k) in c.items" :key="k"><input type="radio" :value="k" v-model="row[j]"><span v-html="o"></span></label>
+                </td>
+                <td v-else-if="c.type == 'select'" :key="j">
+                  <select v-model="row[j]" @change="c.onchange && c.onchange(row)"><option v-for="(o, k) in typeof c.items == 'function' ? c.items(row, j, c.bind) : c.items" :value="k" v-html="o" :key="k"></option></select>
+                </td>
+                <td v-else-if="c.type == 'checkbox'" :key="j">
+                  <label v-for="(o, k) in c.items" :key="k"><input type="checkbox" :value="k" v-model="row[j]"><span v-html="o"></span></label>
+                </td>
+              </template>
             </template>
           </template>
-        </template>
-        <td v-if="tbl.action">
-          <template v-for="(b, j) in tbl.action">
-            <button v-if="typeof b.condition == 'undefined' || btnCondition(data, i, b)" @click="btnClick(data, i, b)" v-html="b.caption" :key="j"></button>
-          </template>
-        </td>
-      </tr>
+          <td v-if="tbl.action">
+            <template v-for="(b, j) in tbl.action">
+              <button v-if="typeof b.condition == 'undefined' || btnCondition(data, i, b)" @click="btnClick(data, i, b)" v-html="b.caption" :key="j"></button>
+            </template>
+          </td>
+        </tr>
+      </template>
+      <td v-else :colspan="colspan">无数据</td>
     </tbody>
-    <td v-else :colspan="colspan">无数据</td>
   </template>
   <tbody v-else>
     <tr v-for="(row, i) in data" :key="i"><td v-for="(c, j) in row" :key="j" v-html="c"></td></tr>

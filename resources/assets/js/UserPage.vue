@@ -1,7 +1,7 @@
 <template>
   <page-ctrl>
     <div style="display: flex">
-      <tree :items="tree" :selected="$store.state.selected"></tree>
+      <tree :items="tree" :selected="$store.state.selected" :width="width" :shown="shown" @split="split"></tree>
       <div style="flex-grow: 1; overflow: auto">
         <table class="datable" v-if="user">
           <caption style="position: relative">用户信息<a v-if="users" :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a></caption>
@@ -12,12 +12,14 @@
             <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.devCount}}</td></tr>
           </tbody>
         </table>
-        <router-view></router-view>
+        <datable v-if="$route.name == 'users'" :tbl="tbl" :data="user && user.device"></datable>
+        <router-view v-else></router-view>
       </div>
     </div>
   </page-ctrl>
 </template>
 <script>
+import cookie from 'js-cookie'
 import Vue from 'vue'
 import Tree from './components/Tree'
 import Datable from './components/Datable'
@@ -28,7 +30,21 @@ export default {
   props: ['user', 'users'],
   data() {
     return {
-      tr: []
+      tr: [],
+      width: 100,
+      shown: true,
+      tbl: {
+        caption: '设备列表',
+        columns: {
+          link: '名称',
+          token: '标识',
+          created_at: '注册日期',
+          state: {
+            caption: '状态',
+            items: ['待审核', '正常']
+          }
+        }
+      }
     }
   },
   computed: {
@@ -55,6 +71,18 @@ export default {
       }
       return this.tr
     }
+  },
+  methods: {
+    split(width, shown) {
+      this.width = width
+      this.shown = shown
+      cookie.set('tree', {width, shown})
+    }
+  },
+  mounted() {
+    let t = JSON.parse(cookie.get('tree'))
+    this.width = t.width
+    this.shown = t.shown
   }
 }
 </script>

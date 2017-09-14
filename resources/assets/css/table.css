@@ -1,18 +1,26 @@
 .datable {
   margin-top: 1em;
   overflow: auto;
-  background-color: white;
 }
 table.datable {
-  border-collapse: collapse;
+  border-spacing: 0;
   text-align: center;
   width: 100%;
 }
 .datable caption {font-weight: bold}
+.datable tbody {background-color: white}
 .datable tr:nth-of-type(even) {background-color: #eee}
-.datable th, td {
-  padding: 5px 0;
-  border: 1px solid #ccc
+.datable th, td {padding: 5px 0}
+.datable th {
+  background-color: lightblue;
+  border-width: 1px;
+  border-style: solid;
+  border-color: white #aaa #aaa white;
 }
-.datable th {background: linear-gradient(#ddf, #bbf)}
+.datable th:first-child {border-radius: .5em 0 0 0}
+.datable th:last-child {border-radius: 0 .5em 0 0}
+.datable td {
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
 .datable label {margin: 0 20px}

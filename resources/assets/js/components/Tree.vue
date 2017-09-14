@@ -24,18 +24,25 @@ ul.tree {
   color: white;
   background-color: blue;
 }
+.split {
+  background-color: yellow;
+  width: .5em;
+  height: 5em;
+  line-height: 5em;
+  align-self: center;
+}
 </style>
 <template>
   <div style="display: flex">
-    <tree :items="items" :selected="selected" v-show="nav" :style="{width: width || '150px'}"></tree>
-    <div style="background-color: yellow; width: .5em; height: 5em; line-height: 5em; align-self: center; cursor: pointer" @click="nav = !nav">{{nav ? '<' : '>'}}</div>
+    <tree :items="items" :selected="selected" v-show="show" :style="{width: wid}"></tree>
+    <div class="split" :style="{cursor: show ? 'ew-resize' : 'pointer'}" :draggable="show" @click="toggle" @dragstart="ondragstart" @drag="ondrag">{{show ? '<' : '>'}}</div>
   </div>
 </template>
 <script>
 import Vue from 'vue'
 
 export default {
-  props: ['items', 'selected', 'width'],
+  props: ['items', 'selected', 'width', 'shown'],
   components: {
     tree: {
       name: 'tree',
@@ -50,13 +57,7 @@ export default {
   </li>
 </ul>
 `,
-      inheritAttrs: false,
       props: ['items', 'selected'],
-      data() {
-        return {
-          exp: []
-        }
-      },
       methods: {
         expand(i) {
           Vue.set(this.items[i], 'expand', !this.items[i].expand)
@@ -66,8 +67,39 @@ export default {
   },
   data() {
     return {
-      nav: document.documentElement.clientWidth > 600,
+      w: 150,
+      s: document.documentElement.clientWidth > 600,
     }
   },
+  computed: {
+    wid() {
+      return (this.width || this.w) + 'px'
+    },
+    show() {
+      return typeof this.shown == 'undefined' ? this.s : this.shown
+    }
+  },
+  methods: {
+    toggle() {
+      this.s = !this.s
+      this.$emit('split', this.width, this.s)
+    },
+    ondragstart(e) {
+      this.x0 = e.pageX
+    },
+    ondrag(e) {
+      let x = e.pageX
+      if(x)
+        this.x = x
+      else {
+        let w = this.width + this.x - this.x0
+        if(w < 70)
+          this.s = false
+        else
+          this.w = w
+        this.$emit('split', this.w, this.s)
+      }
+    }
+  }
 }
 </script>
