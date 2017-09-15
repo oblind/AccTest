@@ -4,13 +4,13 @@
   width: 100%;
   height: 100px;
   position: relative;
-  overflow: hidden;
   background: url(/acc/img/Header.jpg);
 }
 .title {
   color: yellow;
   font-size: 2em;
   font-weight: bold;
+  word-wrap: none;
   line-height: 2.5em;
 }
 .menu {

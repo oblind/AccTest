@@ -23,10 +23,22 @@
             <td v-if="typeof c != 'object'" v-html="row[j]" :key="j"></td>
             <template v-else>
               <template v-if="!hide[j]">
-                <td v-if="!c.type && typeof c.items == 'function'" v-html="getItems(row[j], c.items(row, j))" :key="j"></td>
-                <td v-else-if="!c.type && c.items" v-html="getItems(row[j], c.items)" :key="j"></td>
-                <td v-else-if="!c.type && c.filter" v-html="c.filter(row[j])" :key="j"></td>
-                <td v-else-if="!c.type" v-html="row[j]" :key="j"></td>
+                <template v-if="!c.type && typeof c.items == 'function'">
+                  <td v-if="c.href" :key="j"><a :href="row[c.href]">{{getItems(row[j], c.items(row, j))}}</a></td>
+                  <td v-else v-html="getItems(row[j], c.items(row, j))" :key="j"></td>
+                </template>
+                <template v-else-if="!c.type && c.items">
+                  <td v-if="c.href" :key="j"><a :href="row[c.href]">{{getItems(row[j], c.items)}}</a></td>
+                  <td v-else v-html="getItems(row[j], c.items)" :key="j"></td>
+                </template>
+                <template v-else-if="!c.type && c.filter">
+                  <td v-if="c.href" :key="j"><a :href="row[c.href]">{{c.filter(row[j])}}</a></td>
+                  <td v-else v-html="c.filter(row[j])" :key="j"></td>
+                </template>
+                <template v-else-if="!c.type">
+                  <td v-if="c.href" :key="j"><a :href="row[c.href]">{{row[j]}}</a></td>
+                  <td v-else v-html="row[j]" :key="j"></td>
+                </template>
                 <td v-else-if="c.type == 'radio'" :key="j">
                   <label v-for="(o, k) in c.items" :key="k"><input type="radio" :value="k" v-model="row[j]"><span v-html="o"></span></label>
                 </td>

@@ -2,7 +2,7 @@
   <page-ctrl>
     <div style="display: flex">
       <tree :items="tree" :selected="$store.state.selected" :width="width" :shown="shown" @split="split"></tree>
-      <div style="flex-grow: 1; overflow: auto">
+      <div style="padding: 5px; flex-grow: 1; overflow: auto">
         <table class="datable" v-if="user">
           <caption style="position: relative">用户信息<a v-if="users" :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a></caption>
           <thead>
@@ -27,7 +27,6 @@ import PageCtrl from './PageCtrl'
 
 export default {
   components: {PageCtrl, Tree, Datable},
-  props: ['user', 'users'],
   data() {
     return {
       tr: [],
@@ -36,7 +35,10 @@ export default {
       tbl: {
         caption: '设备列表',
         columns: {
-          link: '名称',
+          name: {
+            caption: '名称',
+            href: 'href'
+          },
           token: '标识',
           created_at: '注册日期',
           state: {
@@ -48,12 +50,19 @@ export default {
     }
   },
   computed: {
+    user() {
+      return this.$store.state.curUser
+    },
+    users() {
+      return this.$store.state.users
+    },
     tree() {
       if(this.users && !this.tr.length) {
         let p = this.$route.params
         for(let i = 0; i < this.users.length; i++) {
           let n = {
-            caption: this.users[i].link,
+            caption: this.users[i].name,
+            href: this.users[i].href,
             data: this.users[i],
             items: [],
           }
@@ -61,7 +70,8 @@ export default {
             n.expand = true
           for(let j = 0; j < this.users[i].device.length; j++) {
             let d = {
-              caption: this.users[i].device[j].link,
+              caption: this.users[i].device[j].name,
+              href: this.users[i].device[j].href,
               data: this.users[i].device[j],
             }
             n.items.push(d)
@@ -77,12 +87,23 @@ export default {
       this.width = width
       this.shown = shown
       cookie.set('tree', {width, shown})
+    },
+  },
+  beforeRouteUpdate(to, from, next) {
+    if(this.user.id != to.params.id) {
+      this.$store.state.curUser = this.users.find(u => u.id == to.params.id)
     }
+    if(to.name == 'users')
+      this.$store.state.selected = this.user
+    next()
   },
   mounted() {
-    let t = JSON.parse(cookie.get('tree'))
-    this.width = t.width
-    this.shown = t.shown
+    let t = cookie.get('tree')
+    if(t) {
+      t = JSON.parse(t)
+      this.width = t.width
+      this.shown = t.shown
+    }
   }
 }
 </script>

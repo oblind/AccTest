@@ -9,16 +9,23 @@ ul.menu, ul.drop {
   padding: 0;
   margin: 0;
 }
-.menu>li {
-  float: left;
-  position: relative;
+.menu>li {float: left}
+.menu li {position: relative}
+.menu span {
+  display: flex;
+  align-items: center;
 }
 .drop {
   display: none;
   position: absolute;
-  left: 0;
-  top: 2em;
+  left: 100%;
+  top: 0;
   z-index: 100;
+}
+.menu>li>.drop {
+  position: absolute;
+  left: 0;
+  top: 100%;
 }
 ul.drop {
   color: black;
@@ -32,19 +39,15 @@ ul.drop {
 }
 .drop>li:hover {
   color: white;
-  background-color: red
+  background-color: #37f;
 }
-.menu>li:hover .drop {display: list-item}
+.menu>li:hover>.drop, .drop>li:hover>.drop {display: list-item}
 </style>
 <template>
   <ul class="menu">
     <template v-for="(mi, i) in menu">
       <li :key="i" v-if="typeof mi.condition == 'undefined' || mi.condition($parent)" @click="mi.onclick && mi.onclick($parent)"><span v-html="mi.caption"></span>
-        <ul class="drop" v-if="mi.items">
-          <template v-for="(di, j) in mi.items">
-            <li :key="j" v-if="typeof di.condition == 'undefined' || di.condition($parent)" v-html="di.caption" @click="di.onclick && di.onclick($parent)"></li>
-          </template>
-        </ul>
+        <mi v-if="mi.items" :items="mi.items"></mi>
       </li>
     </template>
   </ul>
@@ -52,6 +55,20 @@ ul.drop {
 <script>
 export default {
   props: ['menu'],
+  components: {
+    mi: {
+      name: 'mi',
+      props: ['items'],
+      template: `<ul class="drop">
+  <template v-for="(mi, i) in items">
+    <li :key="i" v-if="typeof mi.condition == 'undefined' || mi.condition($parent)" @click="mi.onclick && mi.onclick($parent)"><span v-html="mi.caption + (mi.items ? ' >' : '')"></span>
+      <mi v-if="mi.items" :items="mi.items"></mi>
+    </li>
+  </template>
+</ul>
+`,
+    }
+  }
 }
 </script>
 

@@ -23,9 +23,9 @@ let store = new Vuex.Store({
     fixUser(u) {
       u.groupName = u.group.name
       u.devCount = u.device.length + '/' + u.group.capacity
-      u.link = '<a href="#/user/' + u.id + '">' + u.name + '</a>'
+      u.href = '#/user/' + u.id
       u.device.forEach(e => {
-        e.link = '<a href="#/user/' + u.id + '/device/' + e.id + '">' + e.name + '</a>'
+        e.href = '#/user/' + u.id + '/device/' + e.id
         e.created_at = e.created_at.substr(2, e.created_at.length - 5)
       })
     }
@@ -82,18 +82,7 @@ let router = new VueRouter({
     {
       name: 'users',
       path: '/user/:id',
-      component: {
-        name: 'users',
-        template: '<UserPage :user="$store.state.curUser" :users="$store.state.users"></UserPage>',
-        beforeRouteUpdate(to, from, next) {
-          if(store.state.curUser.id != to.params.id) {
-            store.state.curUser = store.state.users.find(u => u.id == to.params.id)
-          }
-          if(to.name == 'users')
-            store.state.selected = store.state.curUser
-          next()
-        },
-      },
+      component: UserPage,
       children: [
         {
           name: 'editUser',
@@ -115,15 +104,7 @@ let router = new VueRouter({
     }, {
       name: 'login',
       path: '/auth/create',
-      component: {
-        name: 'login',
-        template: '<LoginPage @login="login"></LoginPage>',
-        methods: {
-          login(id) {
-            this.$router.push({name: 'main', params: {id}})
-          }
-        }
-      }
+      component: LoginPage
     }
   ],
 })
