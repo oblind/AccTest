@@ -1,7 +1,7 @@
 <template>
   <page-ctrl>
     <div style="display: flex">
-      <tree :items="tree" :selected="$store.state.selected" :width="width" :shown="shown" @split="split"></tree>
+      <tree :tree="tree" :selection="$store.state.selection" :width="width" :shown="shown" @split="split"></tree>
       <div style="padding: 5px; flex-grow: 1; overflow: auto">
         <table class="datable" v-if="user">
           <caption style="position: relative">用户信息<a v-if="users" :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a></caption>
@@ -29,7 +29,13 @@ export default {
   components: {PageCtrl, Tree, Datable},
   data() {
     return {
-      tr: [],
+      tr: {
+        items: [],
+        icons: [
+          'img/user16.png',
+          'img/phone16.png'
+        ]
+      },
       width: 100,
       shown: true,
       tbl: {
@@ -57,13 +63,14 @@ export default {
       return this.$store.state.users
     },
     tree() {
-      if(this.users && !this.tr.length) {
+      if(this.users && !this.tr.items.length) {
         let p = this.$route.params
         for(let i = 0; i < this.users.length; i++) {
           let n = {
             caption: this.users[i].name,
             href: this.users[i].href,
             data: this.users[i],
+            icon: 0,
             items: [],
           }
           if(this.users[i].id == p.id)
@@ -73,10 +80,11 @@ export default {
               caption: this.users[i].device[j].name,
               href: this.users[i].device[j].href,
               data: this.users[i].device[j],
+              icon: 1
             }
             n.items.push(d)
           }
-          this.tr.push(n)
+          this.tr.items.push(n)
         }
       }
       return this.tr
@@ -94,7 +102,7 @@ export default {
       this.$store.state.curUser = this.users.find(u => u.id == to.params.id)
     }
     if(to.name == 'users')
-      this.$store.state.selected = this.user
+      this.$store.state.selection = this.user
     next()
   },
   mounted() {

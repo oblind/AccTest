@@ -19,7 +19,7 @@ Vue.component('LoginPage', LoginPage)
 
 let store = new Vuex.Store({
   state: {
-    user: null, users: null, curUser: null, curDevice: null, selected: null,
+    user: null, users: null, curUser: null, curDevice: null, selection: null,
     fixUser(u) {
       u.groupName = u.group.name
       u.devCount = u.device.length + '/' + u.group.capacity
@@ -57,7 +57,7 @@ let store = new Vuex.Store({
               router.push('/user/' + u.id)
             else {
               state.curUser = state.users.find(u => u.id == id)
-              state.selected = state.curUser
+              state.selection = state.curUser
               return
             }
           }
@@ -65,7 +65,7 @@ let store = new Vuex.Store({
       } else
         router.push('/user/' + u.id)
       state.curUser = u
-      state.selected = u
+      state.selection = u
     },
     logout(state) {
       axios.delete('./api/auth').then(() => {

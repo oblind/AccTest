@@ -53,7 +53,7 @@ export default {
         for(let i = 0; i < this.user.device.length; i++)
           if(this.user.device[i].id == id) {
             this.index = i
-            this.$store.state.curDevice = this.$store.state.selected = this.user.device[i]
+            this.$store.state.curDevice = this.$store.state.selection = this.user.device[i]
             break;
           }
       }
