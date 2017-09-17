@@ -1,7 +1,10 @@
 <template>
   <div>
     <table class="datable" v-if="device">
-      <caption style="position: relative">设备信息<a style="position: absolute; left: 0" :href="'#/user/' + user.id + '/device/' + device.id + '/edit'">编辑</a></caption>
+      <caption style="position: relative">设备信息
+        <u v-if="$route.name == 'editDevice'" style="position: absolute; left: 0; cursor: pointer" @click="$router.go(-1)">返回</u>
+        <a v-else style="position: absolute; left: 0" :href="'#/user/' + user.id + '/device/' + device.id + '/edit'">编辑</a>
+      </caption>
       <thead>
         <tr><th>名称</th><th>标识</th><th>注册日期</th><th>状态</th><th>操作</th></tr>
       </thead>

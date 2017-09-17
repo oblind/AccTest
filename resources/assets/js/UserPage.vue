@@ -4,7 +4,12 @@
       <tree :tree="tree" :selection="$store.state.selection" :width="width" :shown="shown" @split="split"></tree>
       <div style="padding: 5px; flex-grow: 1; overflow: auto">
         <table class="datable" v-if="user">
-          <caption style="position: relative">用户信息<a v-if="users" :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a></caption>
+          <caption style="position: relative">用户信息
+            <template v-if="users">
+              <u v-if="$route.name == 'editUser'" style="position: absolute; left: 0; cursor: pointer" @click="$router.go(-1)">返回</u>
+              <a v-else :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
+            </template>
+          </caption>
           <thead>
             <tr><th>用户名</th><th>邮箱</th><th>用户组</th><th>设备数</th></tr>
           </thead>
@@ -36,7 +41,7 @@ export default {
           'img/phone16.png'
         ]
       },
-      width: 100,
+      width: 150,
       shown: true,
       tbl: {
         caption: '设备列表',
@@ -95,7 +100,7 @@ export default {
       this.width = width
       this.shown = shown
       cookie.set('tree', {width, shown})
-    },
+    }
   },
   beforeRouteUpdate(to, from, next) {
     if(this.user.id != to.params.id) {

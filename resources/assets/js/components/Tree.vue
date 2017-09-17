@@ -31,18 +31,13 @@ ul.tree {
   color: white;
   background-color: #37f;
 }
-.split {
-  background-color: yellow;
-  width: .5em;
-  height: 5em;
-  line-height: 5em;
-  align-self: center;
-}
 </style>
 <template>
   <nav style="display: flex">
     <tree :items="tree.items" :icons="tree.icons" :selection="selection" v-show="show" :style="{width: wid}"></tree>
-    <div class="split" :style="{cursor: show ? 'ew-resize' : 'pointer'}" :draggable="show" @click="toggle" @dragstart="ondragstart">{{show ? '<' : '>'}}</div>
+    <div style="width: .5em; display: flex" :style="{cursor: show ? 'col-resize' : null}" @mousedown="mousedown">
+      <div style="background-color: yellow; cursor: pointer; height: 3em; line-height: 3em; align-self: center" @click="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
+    </div>
   </nav>
 </template>
 <script>
@@ -95,6 +90,7 @@ export default {
   },
   data() {
     return {
+      move: false,
       w: 150,
       s: document.documentElement.clientWidth > 600,
       selectionIndex: -1
@@ -102,7 +98,7 @@ export default {
   },
   computed: {
     wid() {
-      return (this.width || this.w) + 'px'
+      return (this.move || !this.width ? this.w : this.width) + 'px'
     },
     show() {
       return typeof this.shown == 'undefined' ? this.s : this.shown
@@ -113,26 +109,25 @@ export default {
       this.s = !this.s
       this.$emit('split', this.width, this.s)
     },
-    ondragstart(e) {
-      e.dataTransfer.effectAllowed = 'move'
-      e.dataTransfer.setData('tree', this.id)
-      this.x0 = e.pageX
+    mousedown(e) {
+      if(this.show) {
+        this.move = true
+        this.x0 = e.pageX
+        this.w0 = this.width || this.w
+      }
     }
   },
   mounted() {
     let h = document.addEventListener ? 'addEventListener' : 'attachEvent'
-    let vm = this
-    this.id = Math.floor(Math.random() * 1000)
-    document[h]('dragover', e => e.dataTransfer.types[0] == 'tree' && e.preventDefault())
-    document[h]('drop', e => {
-      if(e.dataTransfer.getData('tree') == vm.id) {
-        let w = (vm.width || vm.w) + e.pageX - vm.x0
-        if(w < 70)
-          vm.s = false
-        else
-          vm.w = w
-        vm.$emit('split', vm.w, vm.s)
+    document[h]('mouseup', e => {
+      if(this.move) {
+        this.move = false
+        this.$emit('split', this.w, this.s)
       }
+    })
+    document[h]('mousemove', e => {
+      if(this.move)
+        this.w = this.w0 + e.pageX - this.x0
     })
   }
 }
