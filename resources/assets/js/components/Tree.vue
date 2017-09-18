@@ -26,6 +26,14 @@ ul.tree {
   width: 1em;
   text-align: center;
 }
+.split {
+  background-color: yellow;
+  cursor: pointer;
+  width: .5em;
+  height: 3em;
+  line-height: 3em;
+  align-self: center;
+}
 .leaf {margin-left: 1em}
 .selection span, .selection a {
   color: white;
@@ -34,9 +42,12 @@ ul.tree {
 </style>
 <template>
   <nav style="display: flex">
-    <tree :items="tree.items" :icons="tree.icons" :selection="selection" v-show="show" :style="{width: wid}"></tree>
-    <div style="width: .5em; display: flex" :style="{cursor: show ? 'col-resize' : null}" @mousedown="mousedown">
-      <div style="background-color: yellow; cursor: pointer; height: 3em; line-height: 3em; align-self: center" @click="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
+    <tree v-show="show" :style="{width: wid}" :items="tree.items" :icons="tree.icons" :selection="selection"></tree>
+    <div v-if="mobile" style="display: flex" :style="{cursor: show ? 'col-resize' : null}" @touchstart="touchstart">
+      <div class="split" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
+    </div>
+    <div v-else style="display: flex" :style="{cursor: show ? 'col-resize' : null}" @mousedown="touchstart">
+      <div class="split" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
     </div>
   </nav>
 </template>
@@ -93,41 +104,62 @@ export default {
       move: false,
       w: 150,
       s: document.documentElement.clientWidth > 600,
+      sset: false,
       selectionIndex: -1
     }
   },
   computed: {
+    mobile() {
+      return /Mobile/.test(navigator.userAgent)
+    },
     wid() {
-      return (this.move || !this.width ? this.w : this.width) + 'px'
+      if(!this.move && this.width)
+        this.w = this.width
+      return this.w + 'px'
     },
     show() {
-      return typeof this.shown == 'undefined' ? this.s : this.shown
+      if(this.sset)
+        this.sset = false
+      else if(typeof this.shown != 'undefined')
+        this.s = this.shown
+      return this.s
     }
   },
   methods: {
     toggle() {
       this.s = !this.s
+      this.sset = true
       this.$emit('split', this.width, this.s)
     },
-    mousedown(e) {
+    touchstart(e) {
       if(this.show) {
         this.move = true
-        this.x0 = e.pageX
+        let t = e.targetTouches ? e.targetTouches[0] : e
+        this.x0 = t.pageX
         this.w0 = this.width || this.w
       }
     }
   },
   mounted() {
-    let h = document.addEventListener ? 'addEventListener' : 'attachEvent'
-    document[h]('mouseup', e => {
+    let e = this.mobile ? {
+      touchmove: 'touchmove',
+      touchend: 'touchend'
+    } : {
+      touchmove: 'mousemove',
+      touchend: 'mouseup'
+    }
+    document.addEventListener(e.touchmove, e => {
+      if(this.move) {
+        e.preventDefault()
+        let t = e.targetTouches ? e.targetTouches[0] : e
+        this.w = this.w0 + t.pageX - this.x0
+      }
+    }, {passive: false})
+    document.addEventListener(e.touchend, e => {
       if(this.move) {
         this.move = false
         this.$emit('split', this.w, this.s)
       }
-    })
-    document[h]('mousemove', e => {
-      if(this.move)
-        this.w = this.w0 + e.pageX - this.x0
     })
   }
 }
