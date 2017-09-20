@@ -1,20 +1,19 @@
 <template>
-  <div>
+  <div v-if="$route.name == 'device'">
     <table class="datable" v-if="device">
       <caption style="position: relative">设备信息
-        <u v-if="$route.name == 'editDevice'" style="position: absolute; left: 0; cursor: pointer" @click="$router.go(-1)">返回</u>
-        <a v-else style="position: absolute; left: 0" :href="'#/user/' + user.id + '/device/' + device.id + '/edit'">编辑</a>
+        <a style="position: absolute; left: 0" :href="'#/user/' + user.id + '/device/' + device.id + '/edit'">编辑</a>
       </caption>
       <thead>
-        <tr><th>名称</th><th>标识</th><th>注册日期</th><th>状态</th><th>操作</th></tr>
+        <tr><th>名称</th><th>标识</th><th>使用人</th><th>注册日期</th><th>状态</th><th>操作</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{device.name}}</td><td>{{device.token}}</td><td>{{device.created_at}}</td><td>{{state[device.state]}}</td><td><button v-if="admin && device.state == 0" @click="pass(device)">通过</button><button @click="del">删除</button></td></tr>
+        <tr><td>{{device.name}}</td><td>{{device.token}}</td><td>{{device.userName}}</td><td>{{device.created_at}}</td><td>{{state[device.state]}}</td><td><button v-if="admin && device.state == 0" @click="pass(device)">通过</button><button @click="del">删除</button></td></tr>
       </tbody>
     </table>
-    <router-view></router-view>
-    <datable :tbl="tbl" :data="data"></datable>
+    <datable :tbl="tbl" :data="device && device.data"></datable>
   </div>
+  <router-view v-else :device="device"></router-view>
 </template>
 <script>
 import axios from 'axios'
@@ -48,9 +47,6 @@ export default {
       return this.$store.state.curUser
     },
     device() {
-      return this.$store.state.curDevice
-    },
-    data() {
       if(this.user) {
         let id = this.$route.params.devId
         for(let i = 0; i < this.user.device.length; i++)
@@ -60,7 +56,7 @@ export default {
             break;
           }
       }
-      return this.device && this.device.data
+      return this.$store.state.curDevice
     },
     admin() {
       return this.$store.state.user && this.$store.state.user.groupId == 255
@@ -76,7 +72,7 @@ export default {
     del() {
       if(confirm('删除该设备 ?'))
         axios.delete('./api/user/' + this.user.id + '/device/' + this.device.id).then(() => {
-          this.user.device.splice(this.index, 1)
+          Vue.delete(this.user.device, this.index)
           if(this.user.device.length == 0)
             this.$router.push('/user/' + this.user.id)
           else {
@@ -86,6 +82,6 @@ export default {
           }
         })
     }
-  },
+  }
 }
 </script>

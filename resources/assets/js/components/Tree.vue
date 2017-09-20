@@ -12,15 +12,11 @@ ul.tree {
   display: flex;
   align-items: center;
 }
-.tree span {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-}
-.tree a {
+.tree span, .tree a {
   padding: 5px;
   flex-grow: 1;
   display: flex;
+  align-items: center;
 }
 .tree b {
   width: 1em;
@@ -42,7 +38,7 @@ ul.tree {
 </style>
 <template>
   <nav style="display: flex">
-    <tree v-show="show" :style="{width: wid}" :items="tree.items" :icons="tree.icons" :selection="selection"></tree>
+    <tree v-show="show" :style="{width: wid}" :tree="tree" :icons="tree.icons" :selection="selection"></tree>
     <div v-if="mobile" style="display: flex" :style="{cursor: show ? 'col-resize' : null}" @touchstart="touchstart">
       <div class="split" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
     </div>
@@ -65,25 +61,32 @@ export default {
       <b v-if="t.items && t.items.length" style="cursor: pointer" @click="expand(i)">{{t.expand ? '-' : '+'}}</b>
       <b v-else></b>
       <img v-if="icon(t)" :src="icon(t)">
-      <a v-if="t.href" :href="t.href" v-html="t.caption"></a>
-      <span v-else v-html="t.caption"></span>
+      <a v-if="t.tn.href" :href="t.tn.href" v-html="t.tn.caption"></a>
+      <span v-else v-html="t.tn.caption"></span>
     </div>
-    <tree v-if="t.items && t.items.length" class="leaf" :id="i" :items="t.items" :icons="icons" :selection="selection" v-show="t.expand" @expand="expand" @selected="selected"></tree>
+    <tree v-if="t.items && t.items.length" class="leaf" :id="i" :tree="t" :icons="icons" :selection="selection" v-show="t.expand" @expand="expand" @selected="selected"></tree>
   </li>
 </ul>
 `,
-      props: ['id', 'items', 'icons', 'selection'],
+      props: ['id', 'tree', 'icons', 'selection'],
       data() {
         return {
           selectionIndex: -1
         }
       },
+      computed: {
+        items() {
+          if(this.tree.items && this.tree.items.find(e => e == this.selection))
+            Vue.set(this.tree, 'expand', true)
+          return this.tree.items
+        }
+      },
       methods: {
         icon(t) {
-          return this.icons && typeof t.icon != 'undefined' && this.icons[t.icon]
+          return this.icons && typeof t.tn.icon != 'undefined' && this.icons[t.tn.icon]
         },
         getClass(t, i) {
-          let c = t.data == this.selection ? ['selection'] : null
+          let c = t == this.selection ? ['selection'] : null
           if(c && this.selection != i) {
             this.selectionIndex = i
             this.$emit('selected', this.id)

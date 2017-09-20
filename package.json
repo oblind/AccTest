@@ -24,8 +24,6 @@
     "babel-register": "^6.26.0",
     "cross-env": "^5.0.5",
     "laravel-mix": "^1.4.3",
-    "prerender-spa-plugin": "^2.1.0",
-    "vue-loader": "^13.0.4",
-    "vue-server-renderer": "^2.4.4"
+    "vue-loader": "^13.0.4"
   }
 }

@@ -16,7 +16,11 @@
         "\\.git",
         "\\.DS_Store",
         "/node_modules",
-        "/vendor"
+        "/vendor",
+        "/public",
+        "/storage",
+        "package-lock.json",
+        "composer.lock"
     ],
     "generatedFiles": {
         "uploadOnSave": false,

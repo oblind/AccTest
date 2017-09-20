@@ -1,25 +1,30 @@
+<style>
+.container {
+  padding: 5px;
+  flex-grow: 1;
+}
+</style>
 <template>
   <page-ctrl>
     <div style="display: flex">
       <tree :tree="tree" :selection="$store.state.selection" :width="width" :shown="shown" @split="split"></tree>
-      <div style="padding: 5px; flex-grow: 1; overflow: auto">
+      <div v-if="$route.name == 'users'" class="container">
         <table class="datable" v-if="user">
           <caption style="position: relative">用户信息
             <template v-if="users">
-              <u v-if="$route.name == 'editUser'" style="position: absolute; left: 0; cursor: pointer" @click="$router.go(-1)">返回</u>
-              <a v-else :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
+              <a :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
             </template>
           </caption>
           <thead>
             <tr><th>用户名</th><th>邮箱</th><th>用户组</th><th>设备数</th></tr>
           </thead>
           <tbody>
-            <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.devCount}}</td></tr>
+            <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.device.length + '/' + user.group.capacity}}</td></tr>
           </tbody>
         </table>
-        <datable v-if="$route.name == 'users'" :tbl="tbl" :data="user && user.device"></datable>
-        <router-view v-else></router-view>
+        <datable :tbl="tbl" :data="user && user.device"></datable>
       </div>
+      <router-view v-else class="container"></router-view>
     </div>
   </page-ctrl>
 </template>
@@ -35,11 +40,11 @@ export default {
   data() {
     return {
       tr: {
-        items: [],
         icons: [
           'img/user16.png',
           'img/phone16.png'
-        ]
+        ],
+        items: null
       },
       width: 150,
       shown: true,
@@ -68,28 +73,25 @@ export default {
       return this.$store.state.users
     },
     tree() {
-      if(this.users && !this.tr.items.length) {
+      if(this.users) {
+        this.tr.items = this.users
         let p = this.$route.params
         for(let i = 0; i < this.users.length; i++) {
-          let n = {
-            caption: this.users[i].name,
-            href: this.users[i].href,
-            data: this.users[i],
-            icon: 0,
-            items: [],
+          let n = this.users[i]
+          n.tn = {
+            caption: n.name,
+            href: n.href,
+            icon: 0
           }
-          if(this.users[i].id == p.id)
-            n.expand = true
-          for(let j = 0; j < this.users[i].device.length; j++) {
-            let d = {
-              caption: this.users[i].device[j].name,
-              href: this.users[i].device[j].href,
-              data: this.users[i].device[j],
+          n.items = n.device
+          for(let j = 0; j < n.device.length; j++) {
+            let d = n.device[j]
+            d.tn = {
+              caption: d.name,
+              href: d.href,
               icon: 1
             }
-            n.items.push(d)
           }
-          this.tr.items.push(n)
         }
       }
       return this.tr

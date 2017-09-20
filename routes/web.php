@@ -15,6 +15,10 @@ use App\Http\Controllers\UserController;
 $app->get('/', function() {
   return view('index');
 });
+$app->get('/test', function() {
+  return view('test');
+});
+
 //登录界面
 //$app->get('auth/create', 'AuthController@create');
 //登录
@@ -41,9 +45,10 @@ $app->group(['prefix' => '/api/user', 'middleware' => 'auth'], function($app) {
 });
 
 //设备管理
+//新建
+$app->post('/api/device', 'DeviceController@store');
+$app->get('/api/device/{id}', 'DeviceController@show');
 $app->group(['prefix' => '/api/user/{id}/device', 'middleware' => 'auth'], function($app) {
-  //新建
-  $app->post('/', 'DeviceController@store');
   //通过审核
   $app->post('/{devId}/grant', 'DeviceController@grant');
   //删除

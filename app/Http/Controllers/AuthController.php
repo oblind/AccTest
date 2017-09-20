@@ -9,6 +9,7 @@ use App\User;
 
 class AuthController extends BaseController
 {
+  //登录
   public function store(Request $request) {
     if($u = User::login($request->all(), $err))
       return response($u)->withCookie(Cookie::make('token', $u->id,
@@ -16,7 +17,8 @@ class AuthController extends BaseController
     else
       return response($err, 401);
   }
-
+  
+  //退出
   public function destroy() {
     return response('')->withCookie(Cookie::make('token', 0, -60)); //退出
   }

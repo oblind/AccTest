@@ -22,7 +22,6 @@ let store = new Vuex.Store({
     user: null, users: null, curUser: null, curDevice: null, selection: null,
     fixUser(u) {
       u.groupName = u.group.name
-      u.devCount = u.device.length + '/' + u.group.capacity
       u.href = '#/user/' + u.id
       u.device.forEach(e => {
         e.href = '#/user/' + u.id + '/device/' + e.id
