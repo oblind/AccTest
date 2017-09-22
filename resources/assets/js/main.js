@@ -3,6 +3,7 @@ import axios from 'axios'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VueRouter from 'vue-router'
+import DropMenu from './components/DropMenu'
 import UserPage from './UserPage'
 import EditUserPage from './EditUserPage'
 import EditDevicePage from './EditDevicePage'
@@ -19,7 +20,7 @@ Vue.component('LoginPage', LoginPage)
 
 let store = new Vuex.Store({
   state: {
-    user: null, users: null, curUser: null, curDevice: null, selection: null,
+    user: null, users: null, groups: null, curUser: null, selection: null,
     fixUser(u) {
       u.groupName = u.group.name
       u.href = '#/user/' + u.id
@@ -31,50 +32,41 @@ let store = new Vuex.Store({
   },
   mutations: {
     user(state, u) {
-      if(u.groupId == 255)
-        axios.get('./api/user').then(res => {
+      if(u.groupId == 255) {
+        axios.get('api/user').then(res => {
           state.users = res.data
           state.users.forEach(e => state.fixUser(e))
           state.user = state.users.find(v => u.id == v.id)
-          store.commit('route', state.user)
         })
-      else {
+        axios.get('api/group').then(res => state.groups = res.data)
+      } else {
         state.users = [u]
         state.user = u
         state.fixUser(state.user)
-        store.commit('route', u)
       }
     },
-    route(state, u) {
-      let r = app.$route.matched
-      if(r.length) {
-        r = r[0]
-        if(r.name == 'users') {
-          let id = app.$route.params.id
-          if(u.id != id) {
-            if(!id || u.groupId != 255)
-              router.push('/user/' + u.id)
-            else {
-              state.curUser = state.users.find(u => u.id == id)
-              state.selection = state.curUser
-              return
-            }
-          }
+    editUser(state, u) {
+      state.user.name = u.name
+      state.user.groupId = u.groupId
+      u = state.user
+      for(let i = 0; i < state.users.length; i++)
+        if(state.users[i].id == u.id) {
+          Vue.set(state.users, i, u)
+          break
         }
-      } else
-        router.push('/user/' + u.id)
-      state.curUser = u
-      state.selection = u
     },
     logout(state) {
-      axios.delete('./api/auth').then(() => {
+      axios.delete('api/auth').then(() => {
         state.user = null
+        state.curUser = null
         state.users = null
+        state.groups = null
         router.push({name: 'login'})
       })
     },
   }
 })
+window.store = store
 
 let router = new VueRouter({
   routes: [
@@ -112,9 +104,25 @@ let app = new Vue({
   el: '#app',
   store,
   router,
+  components: {DropMenu},
+  computed: {
+    admin() {
+      return this.$store.state.user
+    },
+    menu() {
+      return [
+        {
+          caption: '退出',
+          onclick(e) {
+            e.$store.commit('logout')
+          }
+        }
+      ]
+    }
+  },
 })
 let token = cookie.get('token')
 if(token)
-  axios.get('./api/user/' + token).then(res => store.commit('user', res.data))
+  axios.get('api/user/' + token).then(res => store.commit('user', res.data))
 else
   router.push({name: 'login'})

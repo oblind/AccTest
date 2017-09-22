@@ -87,9 +87,9 @@ export default {
   },
   methods: {
     colCondition(k, c) {
-      let h = c.condition.call(this.$parent, k)
-      if(!h) this.hide[k] = !h
-      return h
+      let s = c.condition.call(this.$parent, k)
+      this.hide[k] = !s
+      return s
     },
     colClick: function(k) {
       if(this.tbl.orderby == k) this.tbl.desc = !this.tbl.desc;

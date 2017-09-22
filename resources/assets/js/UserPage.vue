@@ -5,38 +5,36 @@
 }
 </style>
 <template>
-  <page-ctrl>
-    <div style="display: flex">
-      <tree :tree="tree" :selection="$store.state.selection" :width="width" :shown="shown" @split="split"></tree>
-      <div v-if="$route.name == 'users'" class="container">
-        <table class="datable" v-if="user">
-          <caption style="position: relative">用户信息
-            <template v-if="users">
-              <a :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
-            </template>
-          </caption>
-          <thead>
-            <tr><th>用户名</th><th>邮箱</th><th>用户组</th><th>设备数</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.device.length + '/' + user.group.capacity}}</td></tr>
-          </tbody>
-        </table>
-        <datable :tbl="tbl" :data="user && user.device"></datable>
-      </div>
-      <router-view v-else class="container"></router-view>
+  <div style="display: flex">
+    <tree :tree="tree" :selection="$store.state.selection" :width="width" :shown="shown" @split="split"></tree>
+    <div v-if="$route.name == 'users'" class="container">
+      <table class="datable" v-if="user">
+        <caption style="position: relative">用户信息
+          <template v-if="users">
+            <a :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
+          </template>
+        </caption>
+        <thead>
+          <tr><th>用户名</th><th>邮箱</th><th>用户组</th><th>设备数</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.device.length + '/' + user.group.capacity}}</td></tr>
+        </tbody>
+      </table>
+      <datable :tbl="tbl" :data="user && user.device"></datable>
     </div>
-  </page-ctrl>
+    <router-view v-else class="container" :user="user"></router-view>
+  </div>
 </template>
 <script>
 import cookie from 'js-cookie'
 import Vue from 'vue'
 import Tree from './components/Tree'
 import Datable from './components/Datable'
-import PageCtrl from './PageCtrl'
 
 export default {
-  components: {PageCtrl, Tree, Datable},
+  components: {Tree, Datable},
+  props: ['admin', 'users'],
   data() {
     return {
       tr: {
@@ -55,7 +53,12 @@ export default {
             caption: '名称',
             href: 'href'
           },
-          token: '标识',
+          token: {
+            caption: '标识',
+            condition() {
+              return this.admin && this.admin.groupId == 255
+            }
+          },
           created_at: '注册日期',
           state: {
             caption: '状态',
@@ -67,10 +70,19 @@ export default {
   },
   computed: {
     user() {
-      return this.$store.state.curUser
-    },
-    users() {
-      return this.$store.state.users
+      if(this.admin) {
+        let id = this.$route.params.id
+        if(this.admin.id == id)
+          this.$store.state.curUser = this.admin
+        else if(this.users)
+          this.$store.state.curUser = this.users.find(u => u.id == id)
+        if(this.$store.state.curUser) {
+          if(this.$route.name == 'users' || this.$route.name == 'editUser')
+            this.$store.state.selection = this.$store.state.curUser
+          return this.$store.state.curUser
+        } else
+          setTimeout(() => this.$router.replace('/user/' + this.admin.id), 0)
+      }
     },
     tree() {
       if(this.users) {
@@ -105,11 +117,13 @@ export default {
     }
   },
   beforeRouteUpdate(to, from, next) {
-    if(this.user.id != to.params.id) {
-      this.$store.state.curUser = this.users.find(u => u.id == to.params.id)
+    if(this.user) {
+      if(this.user.id != to.params.id) {
+        this.$store.state.curUser = this.users.find(u => u.id == to.params.id)
+      }
+      if(to.name == 'users')
+        this.$store.state.selection = this.$store.state.curUser
     }
-    if(to.name == 'users')
-      this.$store.state.selection = this.user
     next()
   },
   mounted() {

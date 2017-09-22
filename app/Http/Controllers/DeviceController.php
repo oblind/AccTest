@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Laravel\Lumen\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use DB;
@@ -42,13 +42,29 @@ class DeviceController extends Controller
   //通过审核
   public function grant(Request $request, $id, $devId) {
     $u = Auth::user();
-    if($u->groupId == 255 && ($d = User::find($id)->device()->find($devId))) {
-      $d->state = 1;
-      $d->save();
-    } else
-      return response('', 401);
+    if($u->id != $id) {
+      if($u->groupId == 255)
+        $u = User::find($id);
+      else
+        return response('', 401);
+    }
+    $d = $u->device()->find($devId);
+    $d->state = 1;
+    $d->save();
   }
 
+  //修改
+  public function update(Request $request, $id, $devId) {
+    $u = Auth::user();
+    if(($u->id == $id || $u->groupId == 255) && ($d = User::find($id)->device()->find($devId))) {
+      $d->name = $request->name;
+      $d->save();
+      return $d->with('data')->first();
+    } else
+      return response('', 401);
+    
+  }
+  
   //删除
   public function destroy(Request $request, $id, $devId) {
     $u = Auth::user();
@@ -57,6 +73,5 @@ class DeviceController extends Controller
       DB::statement('alter table devices auto_increment=1');
     } else
       return response('', 401);
-    
   }
 }

@@ -44,6 +44,9 @@ $app->group(['prefix' => '/api/user', 'middleware' => 'auth'], function($app) {
   $app->delete('/{id}', 'UserController@destroy');
 });
 
+//组管理
+$app->get('/api/group', 'GroupController@index');
+
 //设备管理
 //新建
 $app->post('/api/device', 'DeviceController@store');
@@ -51,6 +54,8 @@ $app->get('/api/device/{id}', 'DeviceController@show');
 $app->group(['prefix' => '/api/user/{id}/device', 'middleware' => 'auth'], function($app) {
   //通过审核
   $app->post('/{devId}/grant', 'DeviceController@grant');
+  //修改
+  $app->put('/{devId}', 'DeviceController@update');
   //删除
   $app->delete('/{devId}', 'DeviceController@destroy');
 });

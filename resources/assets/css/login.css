@@ -9,6 +9,7 @@
 }
 .form input[type=text], .form input[type=email], .form input[type=password] {
     font-size: 1em;
+    width: 10em;
     margin: 2px 0 2px 10px;
     border: 1px solid lightblue;
     border-radius: .2em;

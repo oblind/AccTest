@@ -5,10 +5,10 @@
         <a style="position: absolute; left: 0" :href="'#/user/' + user.id + '/device/' + device.id + '/edit'">编辑</a>
       </caption>
       <thead>
-        <tr><th>名称</th><th>标识</th><th>使用人</th><th>注册日期</th><th>状态</th><th>操作</th></tr>
+        <tr><th>名称</th><th v-show="user.groupId == 255">标识</th><th>使用人</th><th>注册日期</th><th>状态</th><th>操作</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{device.name}}</td><td>{{device.token}}</td><td>{{device.userName}}</td><td>{{device.created_at}}</td><td>{{state[device.state]}}</td><td><button v-if="admin && device.state == 0" @click="pass(device)">通过</button><button @click="del">删除</button></td></tr>
+        <tr><td>{{device.name}}</td><td v-show="user.groupId == 255">{{device.token}}</td><td>{{device.userName}}</td><td>{{device.created_at}}</td><td>{{state[device.state]}}</td><td><button v-if="admin && device.state == 0" @click="pass(device)">通过</button><button @click="del">删除</button></td></tr>
       </tbody>
     </table>
     <datable :tbl="tbl" :data="device && device.data"></datable>
@@ -22,6 +22,7 @@ import Datable from './components/Datable'
 
 export default {
   components: {Datable},
+  props: ['user'],
   data() {
     return {
       state: ['待审核', '正常'],
@@ -43,23 +44,20 @@ export default {
     }
   },
   computed: {
-    user() {
-      return this.$store.state.curUser
-    },
     device() {
       if(this.user) {
         let id = this.$route.params.devId
         for(let i = 0; i < this.user.device.length; i++)
           if(this.user.device[i].id == id) {
             this.index = i
-            this.$store.state.curDevice = this.$store.state.selection = this.user.device[i]
-            break;
+            this.$store.state.selection = this.user.device[i]
+            return this.$store.state.selection
           }
+        this.$router.push(this.$route.matched[0])
       }
-      return this.$store.state.curDevice
     },
     admin() {
-      return this.$store.state.user && this.$store.state.user.groupId == 255
+      return this.user && this.user.groupId == 255
     },
   },
   methods: {

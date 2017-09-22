@@ -26,7 +26,7 @@ class UserController extends BaseController
   public function store(Request $request) //注册
   {
     if($u = User::register($request->all(), $err)) {
-      return response('ok')->withCookie(Cookie::make('token', $u->id, 1440 * 7));  //保存7天
+      return response($u->detail())->withCookie(Cookie::make('token', $u->id, 1440 * 7));  //保存7天
     } else
       return response($err, 401);
   }
@@ -47,8 +47,18 @@ class UserController extends BaseController
   public function update(Request $request, $id)  //保存
   {
     $u = Auth::user();
-    if($id == $u->id || $u->groupId == 255) {
-
+    if($id == $u->id) {
+      $u->name = $request->get('name');
+      $u->save();
+      //return $u->detail();
+      return ['name' => $u->name, 'groupId' => $u->groupId];
+    } elseif($u->groupId == 255) {
+      $u = User::find($id);
+      $u->name = $request->get('name');
+      $u->groupId = $request->get('groupId');
+      $u->save();
+      //return $u->detail();
+      return ['name' => $u->name, 'groupId' => $u->groupId];
     } else
       return response('', 401);  
   }

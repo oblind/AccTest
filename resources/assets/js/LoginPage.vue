@@ -1,18 +1,15 @@
 <template>
-  <page-ctrl>
-    <Register v-if="register" :error="registerError" @register="registerRegister" @login="registerLogin"></Register>
-    <Login v-else :remember_me="remember_me" :error="loginError" @login="loginLogin" @register="loginRegister"></Login>
-  </page-ctrl>
+  <Register v-if="register" :error="registerError" @register="registerRegister" @login="registerLogin"></Register>
+  <Login v-else :remember_me="remember_me" :error="loginError" @login="loginLogin" @register="loginRegister"></Login>
 </template>
 <script>
 import axios from 'axios'
 import cookie from 'js-cookie'
 import Login from './components/Login'
 import Register from './components/Register'
-import PageCtrl from './PageCtrl'
 
 export default {
-  components: {Login, Register, PageCtrl},
+  components: {Login, Register},
   data() {
     return {
       register: false,
@@ -39,7 +36,10 @@ export default {
     registerRegister(form) {
       axios.post('./api/user', {name: form.name.value, email: form.email.value,
         password: form.password.value, password_confirmation: form.password_confirmation.value})
-        .then(res => this.$store.commit('user', res.data))
+        .then(res => {
+          this.$router.push('./user/' + res.data.id)
+          this.$store.commit('user', res.data)
+        })
         .catch(res => this.registerError = res.response.data)
     },
     registerLogin(form) {
