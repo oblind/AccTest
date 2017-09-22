@@ -25,7 +25,7 @@ export default {
       axios.post('./api/auth', {email: form.email.value, password: form.password.value,
         remember_me: form.remember_me.checked})
         .then(res => {
-          this.$router.push('./user/' + res.id)
+          this.$router.push('/user/' + res.data.id)
           this.$store.commit('user', res.data)
           cookie.set('remember_me', form.remember_me.checked ? 1 : 0)
         }).catch(res => this.loginError = res.response.data)
@@ -37,7 +37,7 @@ export default {
       axios.post('./api/user', {name: form.name.value, email: form.email.value,
         password: form.password.value, password_confirmation: form.password_confirmation.value})
         .then(res => {
-          this.$router.push('./user/' + res.data.id)
+          this.$router.push('/user/' + res.data.id)
           this.$store.commit('user', res.data)
         })
         .catch(res => this.registerError = res.response.data)

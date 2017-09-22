@@ -44,6 +44,8 @@ let store = new Vuex.Store({
         state.user = u
         state.fixUser(state.user)
       }
+      if(!app.$route.name)
+        app.$router.push('/user/' + u.id)
     },
     editUser(state, u) {
       state.user.name = u.name
@@ -66,7 +68,6 @@ let store = new Vuex.Store({
     },
   }
 })
-window.store = store
 
 let router = new VueRouter({
   routes: [
@@ -112,6 +113,8 @@ let app = new Vue({
     menu() {
       return [
         {
+          caption: this.$store.state.user && this.$store.state.user.name
+        }, {
           caption: '退出',
           onclick(e) {
             e.$store.commit('logout')
