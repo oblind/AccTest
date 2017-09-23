@@ -7,7 +7,6 @@
 <template>
   <div>
     <a :href="'#/user/' + $route.params.id">返回</a>
-    <div style="text-align: center">{{txt}}</div>
     <form class="form" v-if="user" style="margin-top: 1em" @submit.prevent="submit($event.target)">
       用户名<input type="text" name="name" :value="user.name"><br>
       <div v-if="groups">用户组
@@ -24,11 +23,6 @@ import axios from 'axios'
 
 export default {
   props: ['user'],
-  data() {
-    return {
-      txt: ''
-    }
-  },
   computed: {
     groups() {
       return this.$store.state.groups
@@ -38,8 +32,8 @@ export default {
     submit(form) {
       axios.put('api/user/' + this.$route.params.id, {name: form.name.value, groupId: form.groupId.value}).then(res => {
         this.$store.commit('editUser', res.data)
-        this.txt = '修改成功'
-      })
+        this.$store.commit('message', '修改成功')
+      }).catch(res => this.$store.commit('error', res.response.data))
     }
   }
 }

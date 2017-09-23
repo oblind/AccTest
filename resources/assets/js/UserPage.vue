@@ -3,27 +3,45 @@
   padding: 5px;
   flex-grow: 1;
 }
+.msg {
+  background: white;
+}
+.err {
+  color: red;
+  background-color: yellow;
+}
+.msg, .err {
+  display: inline-block;
+  padding: .2em .5em;
+  margin: 0 auto;
+  border-radius: .5em;
+}
 </style>
 <template>
   <div style="display: flex">
     <tree :tree="tree" :selection="$store.state.selection" :width="width" :shown="shown" @split="split"></tree>
-    <div v-if="$route.name == 'users'" class="container">
-      <table class="datable" v-if="user">
-        <caption style="position: relative">用户信息
-          <template v-if="users">
-            <a :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
-          </template>
-        </caption>
-        <thead>
-          <tr><th>用户名</th><th>邮箱</th><th>用户组</th><th>设备数</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.device.length + '/' + user.group.capacity}}</td></tr>
-        </tbody>
-      </table>
-      <datable :tbl="tbl" :data="user && user.device"></datable>
+    <div class="container">
+      <div v-show="$store.state.message" style="text-align: center">
+        <div :class="[$store.state.error ? 'err' : 'msg']">{{$store.state.message}}</div>
+      </div>
+      <div v-if="$route.name == 'users'">
+        <table class="datable" v-if="user">
+          <caption style="position: relative">用户信息
+            <template v-if="users">
+              <a :href="'#/user/' + user.id + '/edit'" style="position: absolute; left: 0">编辑</a>
+            </template>
+          </caption>
+          <thead>
+            <tr><th>用户名</th><th>邮箱</th><th>用户组</th><th>设备数</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>{{user.name}}</td><td>{{user.email}}</td><td>{{user.groupName}}</td><td>{{user.device.length + '/' + user.group.capacity}}</td></tr>
+          </tbody>
+        </table>
+        <datable :tbl="tbl" :data="user && user.device"></datable>
+      </div>
+      <router-view v-else class="container" :user="user"></router-view>
     </div>
-    <router-view v-else class="container" :user="user"></router-view>
   </div>
 </template>
 <script>

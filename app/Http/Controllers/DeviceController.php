@@ -15,7 +15,7 @@ class DeviceController extends Controller
   public function store(Request $request) {
     //管理员不存在
     if(!$u = User::where('email', $request->get('email'))->first())
-      return response(['error' => trans('device.noAdmin')], 401);
+      return response(['error' => trans('error.noAdmin')], 401);
     //新设备
     if(!$d = Device::where('token', $request->get('token'))->first()) {
       $d = new Device;
@@ -36,7 +36,7 @@ class DeviceController extends Controller
   public function show(Request $request, $id) {
     if($d = Device::find($id))
       return response(['state' => $d->state]);
-    else return response(['error' => trans('device.notFound')], 401);
+    else return response(['error' => trans('error.notFound')], 401);
   }
 
   //通过审核
@@ -46,8 +46,10 @@ class DeviceController extends Controller
       if($u->groupId == 255)
         $u = User::find($id);
       else
-        return response('', 401);
+        return response(trans('error.noPermission'), 401);
     }
+    if(($d = $u->device())->count() >= $u->group()->first()->capacity)
+      return response(trans('error.deviceOverproof'), 401);
     $d = $u->device()->find($devId);
     $d->state = 1;
     $d->save();
@@ -61,8 +63,7 @@ class DeviceController extends Controller
       $d->save();
       return $d->with('data')->first();
     } else
-      return response('', 401);
-    
+      return response('error.noPermission', 401);
   }
   
   //删除
@@ -72,6 +73,6 @@ class DeviceController extends Controller
       $d->delete();
       DB::statement('alter table devices auto_increment=1');
     } else
-      return response('', 401);
+      return response('error.noPermission', 401);
   }
 }

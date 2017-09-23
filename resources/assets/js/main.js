@@ -20,7 +20,7 @@ Vue.component('LoginPage', LoginPage)
 
 let store = new Vuex.Store({
   state: {
-    user: null, users: null, groups: null, curUser: null, selection: null,
+    user: null, users: null, groups: null, curUser: null, selection: null, message: '', error: false,
     fixUser(u) {
       u.groupName = u.group.name
       u.href = '#/user/' + u.id
@@ -66,8 +66,17 @@ let store = new Vuex.Store({
         router.push({name: 'login'})
       })
     },
+    message(state, msg) {
+      store.message = msg
+      store.error = false
+    },
+    error(state, e) {
+      state.message = e
+      state.error = true
+    }
   }
 })
+window.state = store.state
 
 let router = new VueRouter({
   routes: [
@@ -92,13 +101,18 @@ let router = new VueRouter({
             }
           ]
         }
-      ]
+      ],
     }, {
       name: 'login',
       path: '/auth/create',
       component: LoginPage
     }
   ],
+})
+router.beforeEach((to, from, next) => {
+  if(store.state.message)
+    store.state.message = ''
+  next()
 })
 
 let app = new Vue({

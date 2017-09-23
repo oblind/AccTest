@@ -36,6 +36,9 @@ body {
     <drop-menu v-if="admin" :menu="menu"></drop-menu>
   </div>
   <router-view :admin="admin" :users="$store.state.users"></router-view>
+  <div style="text-align: center">联系电话: 021-51244254
+    <a href="ftp/AccTest.apk">客户端下载</a>
+  </div>
 </div>
 <script src="js/manifest.js"></script>
 <script src="js/vendor.js"></script>

@@ -8,7 +8,7 @@
         <tr><th>名称</th><th v-show="user.groupId == 255">标识</th><th>使用人</th><th>注册日期</th><th>状态</th><th>操作</th></tr>
       </thead>
       <tbody>
-        <tr><td>{{device.name}}</td><td v-show="user.groupId == 255">{{device.token}}</td><td>{{device.userName}}</td><td>{{device.created_at}}</td><td>{{state[device.state]}}</td><td><button v-if="admin && device.state == 0" @click="pass(device)">通过</button><button @click="del">删除</button></td></tr>
+        <tr><td>{{device.name}}</td><td v-show="user.groupId == 255">{{device.token}}</td><td>{{device.userName}}</td><td>{{device.created_at}}</td><td>{{state[device.state]}}</td><td><button v-if="device.state == 0" @click="pass(device)">通过</button><button @click="del">删除</button></td></tr>
       </tbody>
     </table>
     <datable :tbl="tbl" :data="device && device.data"></datable>
@@ -65,7 +65,7 @@ export default {
       if(confirm('通过该设备审核 ?'))
         axios.post('./api/user/' + this.user.id + '/device/' + d.id + '/grant').then(() => {
           Vue.set(d, 'state', 1)
-        })
+        }).catch(res => this.$store.commit('error', res.response.data))
     },
     del() {
       if(confirm('删除该设备 ?'))
@@ -78,7 +78,7 @@ export default {
               this.index--
             this.$router.push('/user/' + this.user.id + '/device/' + this.user.device[this.index].id)
           }
-        })
+        }).catch(res => this.$store.commit('error', res.response.data))
     }
   }
 }
