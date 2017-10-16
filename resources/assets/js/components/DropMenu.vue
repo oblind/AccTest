@@ -1,6 +1,8 @@
 <style>
 .menu, .menu a {color: white}
 ul.menu {
+  display: flex;
+  align-items: center;
   border-radius: .5em;
   background-color: rgba(0, 0, 0, .5);
 }
@@ -9,8 +11,11 @@ ul.menu, ul.drop {
   padding: 0;
   margin: 0;
 }
-.menu>li {float: left}
 .menu li {position: relative}
+.menu img {
+  max-width: 24px;
+  max-height: 24px;
+}
 .menu span {
   display: flex;
   align-items: center;
@@ -37,6 +42,10 @@ ul.drop {
   padding: .5em;
   cursor: pointer;
 }
+.menu>li, .menu>li>a, .drop>li, .drop>li>a {
+  display: flex;
+  align-items: center;
+}
 .drop>li:hover {
   color: white;
   background-color: #37f;
@@ -46,8 +55,12 @@ ul.drop {
 <template>
   <ul class="menu">
     <template v-for="(mi, i) in menu">
-      <li :key="i" v-if="typeof mi.condition == 'undefined' || mi.condition($parent)" @click="mi.onclick && mi.onclick($parent)"><span v-html="mi.caption"></span>
-        <mi v-if="mi.items" :items="mi.items"></mi>
+      <li :key="i" v-if="typeof mi.condition == 'undefined' || mi.condition($parent)" @click="mi.onclick && mi.onclick.call($parent)">
+        <a v-if="mi.href" :href="mi.href"><img v-if="mi.icon" :src="mi.icon">{{mi.caption}}</a>
+        <template v-else>
+          <img v-if="mi.icon" :src="mi.icon"><span v-html="mi.caption"></span>
+        </template>
+        <mi v-if="mi.items" :items="mi.items" :root="$parent"></mi>
       </li>
     </template>
   </ul>
@@ -58,11 +71,13 @@ export default {
   components: {
     mi: {
       name: 'mi',
-      props: ['items'],
+      props: ['items', 'root'],
       template: `<ul class="drop">
   <template v-for="(mi, i) in items">
-    <li :key="i" v-if="typeof mi.condition == 'undefined' || mi.condition($parent)" @click="mi.onclick && mi.onclick($parent)"><span v-html="mi.caption + (mi.items ? ' >' : '')"></span>
-      <mi v-if="mi.items" :items="mi.items"></mi>
+    <li :key="i" v-if="typeof mi.condition == 'undefined' || mi.condition($parent)" @click.stop="mi.onclick && mi.onclick.call(root)">
+      <a v-if="mi.href" :href="mi.href">{{mi.caption + (mi.items ? ' >' : '')}}</a>
+      <span v-else v-html="mi.caption + (mi.items ? ' >' : '')"></span>
+      <mi v-if="mi.items" :items="mi.items" :root="root"></mi>
     </li>
   </template>
 </ul>

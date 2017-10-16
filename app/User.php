@@ -29,12 +29,19 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     * @var array
     */
   protected $hidden = [
-    'password',
+    'password', 'iconFile',
   ];
 
   public function detail()
   {
-    return static::where('id', $this->id)->with('group', 'device', 'device.data')->first();
+    if($this->groupId == 255)
+      $r = User::with('device', 'device.data')->get()->all();
+    else
+      $r = User::where('id', $this->id)->with('device', 'device.data')->get()->all();
+    array_walk($r, function(&$v) {
+      $v['info'] = json_decode($v['info']);
+    });
+    return $r;
   }
 
   public static function register($args, &$err)
@@ -53,9 +60,11 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
       $u->email = $args['email'];
       $u->password = Hash::make($args['password']);
       $u->groupId = 1;
+      $u->icon = 'img/user16.png';
+      $u->info = json_encode([['prefix' => '', 'startTrain' => 1, 'endTrain' => 10, 'count' => 6, 'position' => ['一位端左侧', '一位端右侧', '二位端左侧', '二位端右侧']]]);
       $u->save();
-      return $u->detail();
-    }        
+      return $u;
+    }
   }
 
   public static function login($args, &$err)
@@ -67,12 +76,47 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     if($v->fails())
       $err = $v->messages();
     else {
-    $u = static::where(['email' => $args['email']])->first();
-    if(Hash::check($args['password'], $u->password))
-      return $u->detail();
+      $u = static::where(['email' => $args['email']])->first();
+    if($u && Hash::check($args['password'], $u->password))
+      return $u;
     else
       $err = ['error' => [trans('auth.incorrect')]];
     }
+  }
+
+  public function saveIcon($f, &$err) { //设置头像
+    $fn = strtolower($f->getClientOriginalName());
+    $f = (string)$f;
+    if(preg_match('/\.jpg$/', $fn) || preg_match('/\.jpeg$/', $fn))
+      $src = imagecreatefromjpeg($f);
+    elseif(preg_match('/\.png$/', $fn))
+      $src = imagecreatefrompng($f);
+    else {
+      $err = trans('error.imageFormatError');
+      return;
+    }
+    list($w0, $h0) = getimagesize($f);
+    $w = $w0;
+    $h = $h0;
+    if($w0 > $h0) {
+      if($w > 128) {
+        $h *= 128 / $w;
+        $w = 128;
+      }
+    } elseif($h > 128) {
+      $w *= 128 / $h;
+      $h = 128;
+    }
+    $img = imagecreatetruecolor($w, $h);
+    imagealphablending($img, false);
+    imagesavealpha($img, true);
+    imagecopyresampled($img, $src, 0, 0, 0, 0, $w, $h, $w0, $h0);
+    $f = 'img/user/' . $this->id . '.png';
+    imagepng($img, $f);
+    imagedestroy($img);
+    $this->icon = $f;
+    $this->save();
+    return true;
   }
 
   public function group()

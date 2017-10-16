@@ -18,6 +18,6 @@ const { mix } = require('laravel-mix');
 mix
 .js('resources/assets/js/main.js', 'public/js')
 .js('resources/assets/js/test.js', 'public/js')
-.extract(['axios', 'js-cookie', 'vue', 'vuex', 'vue-router'])
+.extract(['axios', 'js-cookie', 'vue', 'vuex', 'vue-router', 'chart.js', 'chartjs-plugin-zoom'])
 .sourceMaps()
 .combine(['resources/assets/css/app.css', 'resources/assets/css/login.css', 'resources/assets/css/table.css'], 'public/css/app.css')

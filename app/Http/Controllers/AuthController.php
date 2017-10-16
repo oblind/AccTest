@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Laravel\Lumen\Routing\Controller as BaseController;
+use Laravel\Lumen\Routing\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use App\User;
 
-class AuthController extends BaseController
+class AuthController extends Controller
 {
   //登录
   public function store(Request $request) {
     if($u = User::login($request->all(), $err))
-      return response($u)->withCookie(Cookie::make('token', $u->id,
-        $request->get('remember_me') ? 1440 * 7 : 30, null, null, false, false));  //保存7天
+      return response($u->detail())->withCookie(Cookie::make('token', $u->id,
+        $request->get('remember_me') ? 1440 * 7 : 30, null, null, false, false));  //保存7天/30分钟
     else
       return response($err, 401);
   }

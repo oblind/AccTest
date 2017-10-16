@@ -36,7 +36,7 @@ class Authenticate
   public function handle($request, Closure $next, $guard = null)
   {
     if($this->auth->guard($guard)->guest())
-      return $request->headers->has('X-Requested-With') ? response('', 401) : redirect('/');
+      return $request->headers->has('X-Requested-With') ? response(trans('error.noPermission'), 401) : redirect('/');
     return $next($request);
   }
 }

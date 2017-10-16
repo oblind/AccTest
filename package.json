@@ -12,18 +12,21 @@
     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
   "dependencies": {
+    "chartjs-plugin-zoom": "^0.5.0",
     "js-cookie": "^2.1.4",
     "vue": "^2.4.4",
     "vue-router": "^2.7.0",
-    "vuex": "^2.4.0"
+    "vuex": "^2.4.1"
   },
   "devDependencies": {
     "axios": "^0.16.2",
+    "babel-core": "^6.26.0",
     "babel-eslint": "^7.2.3",
     "babel-preset-env": "^1.6.0",
     "babel-register": "^6.26.0",
+    "chart.js": "^2.7.0",
     "cross-env": "^5.0.5",
-    "laravel-mix": "^1.4.3",
-    "vue-loader": "^13.0.4"
+    "laravel-mix": "^1.4.5",
+    "vue-loader": "^13.0.5"
   }
 }

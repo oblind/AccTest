@@ -12,6 +12,10 @@ ul.tree {
   display: flex;
   align-items: center;
 }
+.tree img {
+  max-width: 24px;
+  max-height: 24px;
+}
 .tree span, .tree a {
   padding: 5px;
   flex-grow: 1;
@@ -22,7 +26,9 @@ ul.tree {
   width: 1em;
   text-align: center;
 }
-.split {
+.split {display: flex}
+.split:hover {background-color: rgba(0, 0, 0, .3)}
+.split-btn {
   background-color: yellow;
   cursor: pointer;
   width: .5em;
@@ -38,12 +44,12 @@ ul.tree {
 </style>
 <template>
   <nav style="display: flex">
-    <tree v-show="show" :style="{width: wid}" :tree="tree" :icons="tree.icons" :selection="selection"></tree>
-    <div v-if="mobile" style="display: flex" :style="{cursor: show ? 'col-resize' : null}" @touchstart="touchstart">
-      <div class="split" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
+    <tree v-show="show" :style="{width: wid}" :tree="tree" :icons="tree.icons" :selection="sele" @itemSelect="itemSelect"></tree>
+    <div v-if="mobile" class="split" :style="{cursor: show ? 'col-resize' : null}" @touchstart="touchstart">
+      <div class="split-btn" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
     </div>
-    <div v-else style="display: flex" :style="{cursor: show ? 'col-resize' : null}" @mousedown="touchstart">
-      <div class="split" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
+    <div v-else class="split" :style="{cursor: show ? 'col-resize' : null}" @mousedown="touchstart">
+      <div class="split-btn" @click.stop="toggle" @mousedown.stop>{{show ? '<' : '>'}}</div>
     </div>
   </nav>
 </template>
@@ -56,54 +62,58 @@ export default {
     tree: {
       name: 'tree',
       template: `<ul class="tree">
-  <li v-for="(t, i) in items" :key="i">
-    <div :class="getClass(t, i)">
-      <b v-if="t.items && t.items.length" style="cursor: pointer" @click="expand(i)">{{t.expand ? '-' : '+'}}</b>
+  <li v-for="(t, i) in aitems" :key="i">
+    <div :class="t == selection ? ['selection'] : null">
+      <b v-if="t.items && t.items.length" style="cursor: pointer" @click="expand(i, !t.tn.expand)">{{t.tn.expand ? '-' : '+'}}</b>
       <b v-else></b>
       <img v-if="icon(t)" :src="icon(t)">
-      <a v-if="t.tn.href" :href="t.tn.href" v-html="t.tn.caption"></a>
-      <span v-else v-html="t.tn.caption"></span>
+      <a v-if="t.tn.href" :href="t.tn.href" v-html="t.tn.caption" @click.stop="select(t, i)"></a>
+      <span v-else v-html="t.tn.caption" @click.stop="select(t, i)"></span>
     </div>
-    <tree v-if="t.items && t.items.length" class="leaf" :id="i" :tree="t" :icons="icons" :selection="selection" v-show="t.expand" @expand="expand" @selected="selected"></tree>
+    <tree v-if="t.items && t.items.length" class="leaf" :id="i" :tree="t" :icons="icons" :selection="selection" v-show="t.tn.expand" @itemSelect="itemSelect" @expand="expand"></tree>
   </li>
 </ul>
 `,
       props: ['id', 'tree', 'icons', 'selection'],
       data() {
         return {
-          selectionIndex: -1
+          it: null,
+          selectionIndex: -1,
         }
       },
       computed: {
-        items() {
-          if(this.tree.items && this.tree.items.find(e => e == this.selection))
-            Vue.set(this.tree, 'expand', true)
-          return this.tree.items
+        aitems() {
+          if(!this.it)
+            this.it = this.tree.items
+          return this.it
         }
       },
       methods: {
         icon(t) {
-          return this.icons && typeof t.tn.icon != 'undefined' && this.icons[t.tn.icon]
+          return t.icon || this.icons && typeof t.tn.iconIndex != 'undefined' && this.icons[t.tn.iconIndex]
         },
-        getClass(t, i) {
-          let c = t == this.selection ? ['selection'] : null
-          if(c && this.selection != i) {
-            this.selectionIndex = i
-            this.$emit('selected', this.id)
-          }
-          return c
+        expand(i, t) {
+          this.it[i].tn.expand = t
+          Vue.set(this.it, i, this.it[i])
         },
-        expand(i) {
-          Vue.set(this.items[i], 'expand', !this.items[i].expand)
+        select(t, i) {
+          let path = [i]
+          if(typeof this.id != 'undefined')
+            path.unshift(this.id)
+          this.$emit('itemSelect', t, path)
         },
-        selected(i) {
-          this.selectionIndex = i
+        itemSelect(t, path) {
+          this.selectionIndex = path[0]
+          if(typeof this.id != 'undefined')
+            path.unshift(this.id)
+          this.$emit('itemSelect', t, path)
         }
       }
     }
   },
   data() {
     return {
+      sel: null,
       move: false,
       w: 150,
       s: document.documentElement.clientWidth > 600,
@@ -113,7 +123,11 @@ export default {
   },
   computed: {
     mobile() {
-      return /Mobile/.test(navigator.userAgent)
+      return /Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent)
+    },
+    sele() {
+      if(this.selection) this.sel = this.selection
+      return this.sel
     },
     wid() {
       if(!this.move && this.width)
@@ -129,6 +143,11 @@ export default {
     }
   },
   methods: {
+    itemSelect(t, path) {
+      this.sel = t
+      this.selectionIndex = path[0]
+      this.$emit('itemSelect', t, path)
+    },
     toggle() {
       this.s = !this.s
       this.sset = true

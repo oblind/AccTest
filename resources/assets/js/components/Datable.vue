@@ -18,7 +18,7 @@
     </thead>
     <tbody>
       <template v-if="data && data.length">
-        <tr v-for="(row, i) in data" :key="i">
+        <tr v-for="(row, i) in data" :key="i" :class="row == selection ? ['selection'] : null" @click="rowClick(row, i)">
           <template v-for="(c, j) in tbl.columns">
             <td v-if="typeof c != 'object'" v-html="row[j]" :key="j"></td>
             <template v-else>
@@ -48,12 +48,24 @@
                 <td v-else-if="c.type == 'checkbox'" :key="j">
                   <label v-for="(o, k) in c.items" :key="k"><input type="checkbox" :value="k" v-model="row[j]"><span v-html="o"></span></label>
                 </td>
+                <td v-else-if="c.type == 'email'" :key="j">
+                  <input type="email" v-model="row[j]">
+                </td>
+                <td v-else-if="c.type == 'number'" :key="j">
+                  <input type="number" v-model="row[j]">
+                </td>
+                <td v-else :key="j">
+                  <input type="text" v-model="row[j]">
+                </td>
               </template>
             </template>
           </template>
           <td v-if="tbl.action">
             <template v-for="(b, j) in tbl.action">
-              <button v-if="typeof b.condition == 'undefined' || btnCondition(data, i, b)" @click="btnClick(data, i, b)" v-html="b.caption" :key="j"></button>
+              <template v-if="typeof b.condition == 'undefined' || btnCondition(data, i, b)">
+                <a v-if="b.href" :href="row[b.href]" :key="j">{{b.caption}}</a>
+                <button v-else @click.stop.prevent="btnClick(data, i, b)" v-html="b.caption" :key="j"></button>
+              </template>
             </template>
           </td>
         </tr>
@@ -70,12 +82,12 @@
 <script>
 export default {
   name: 'datable',
-  props: ['tbl', 'data'],
+  props: ['tbl', 'data', 'selection'],
   data: function() {
     return {
       def_ascimg: './img/asc.png',
       def_descimg: './img/desc.png',
-      hide: []
+      hide: [],
     };
   },
   computed: {
@@ -91,13 +103,17 @@ export default {
       this.hide[k] = !s
       return s
     },
-    colClick: function(k) {
+    colClick(k) {
       if(this.tbl.orderby == k) this.tbl.desc = !this.tbl.desc;
       else {
         this.tbl.orderby = k;
         this.tbl.desc = false;
       }
       this.sort();
+    },
+    rowClick(row, i) {
+      if(row != this.selection)
+        this.$emit('rowSelect', row, i)
     },
     btnCondition(data, i, b) {
       return b.condition.call(this.$parent, data, i)

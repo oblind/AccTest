@@ -45,8 +45,8 @@ class Handler extends ExceptionHandler
     */
   public function render($request, Exception $e)
   {
-    if(preg_match('/^\/acc\/([^#]*)/', $request->getRequestUri(), $a))
-      return redirect('/acc/#/' . $a[1]);
+    /*if(preg_match('/^\/acc\/([^#]*)/', $request->getRequestUri(), $a))
+      return redirect('/acc/#/' . $a[1]);*/
     return parent::render($request, $e);
   }
 }

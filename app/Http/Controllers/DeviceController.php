@@ -28,51 +28,64 @@ class DeviceController extends Controller
       $d->state = 0;
     }
     $d->name = $request->get('name');
-    $d->userName = $request->get('userName');
     $d->save();
-    return response(['id' => $d->id, 'state' => $d->state]);
+    return [
+      'id' => $d->id,
+      'state' => $d->state,
+      'info' => json_decode($u->info)
+    ];
   }
 
-  public function show(Request $request, $id) {
-    if($d = Device::find($id))
-      return response(['state' => $d->state]);
-    else return response(['error' => trans('error.notFound')], 401);
+  //状态
+  public function state(Request $request, $id) {
+    if($d = Device::find($id)) {
+      $u = User::find($d->userId);
+      return ['state' => $d->state, 'info' => json_decode($u->info)];
+    } else
+      return response(['error' => trans('error.deviceNotFound')], 401);
+  }
+
+  function getDevice($id, $devId, &$u, &$err) {
+    $u = Auth::user();
+    if($u->id == $id || $u->groupId == 255 && ($u = User::find($id)))
+      if($dev = $u->device()->find($devId))
+        return $dev;
+      else
+        $err = trans('error.deviceNotFound');
+    else
+      $err = response(trans('error.noPermission'), 401);
   }
 
   //通过审核
   public function grant(Request $request, $id, $devId) {
-    $u = Auth::user();
-    if($u->id != $id) {
-      if($u->groupId == 255)
-        $u = User::find($id);
-      else
-        return response(trans('error.noPermission'), 401);
-    }
-    if(($d = $u->device())->count() >= $u->group()->first()->capacity)
-      return response(trans('error.deviceOverproof'), 401);
-    $d = $u->device()->find($devId);
-    $d->state = 1;
-    $d->save();
+    if($d = $this->getDevice($id, $devId, $u, $err)) {
+      if(($d = $u->device())->where('state', '=', 1)->count() >= $u->group()->first()->capacity)
+        return response(trans('error.deviceOverproof'), 401);
+      $d = $u->device()->find($devId);
+      $d->state = 1;
+      $d->save();
+    } else
+      return $err;
   }
 
   //修改
   public function update(Request $request, $id, $devId) {
-    $u = Auth::user();
-    if(($u->id == $id || $u->groupId == 255) && ($d = User::find($id)->device()->find($devId))) {
+    if($d = $this->getDevice($id, $devId, $u, $err)) {
       $d->name = $request->name;
-      $d->save();
-      return $d->with('data')->first();
+      $d->save();      
     } else
-      return response('error.noPermission', 401);
+      return $err;
   }
   
   //删除
   public function destroy(Request $request, $id, $devId) {
-    $u = Auth::user();
-    if(($u->id == $id || $u->groupId == 255) && ($d = User::find($id)->device()->find($devId))) {
-      $d->delete();
-      DB::statement('alter table devices auto_increment=1');
+    if($d = $this->getDevice($id, $devId, $u, $err)) {
+      if(!$d->data()->count()) {
+        $d->delete();
+        DB::statement('alter table devices auto_increment=1');
+      } else
+        return response(trans('error.clearDataFirst'), 401);  
     } else
-      return response('error.noPermission', 401);
+      return $err;
   }
 }

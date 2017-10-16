@@ -1,5 +1,5 @@
 .datable {
-  margin-top: 1em;
+  margin-bottom: 1em;
   overflow: auto;
 }
 table.datable {
@@ -7,7 +7,10 @@ table.datable {
   text-align: center;
   width: 100%;
 }
-.datable caption {font-weight: bold}
+.datable caption {
+  font-weight: bold;
+  position: relative;
+}
 .datable tbody {background-color: white}
 .datable tr:nth-of-type(even) {background-color: #eee}
 .datable th, td {padding: 5px 0}
@@ -23,4 +26,18 @@ table.datable {
   border-right: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
 }
-.datable label {margin: 0 20px}
+.datable td label {margin: 0 20px}
+.datable a, .datable button {margin: 0 .1em}
+.datable input[type=text], .datable input[type=email], .datable input[type=number] {
+  width: 100%;
+  box-sizing: border-box;
+}
+tr.selection {
+  color: white;
+  background-color: #37f !important;
+}
+.act {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
